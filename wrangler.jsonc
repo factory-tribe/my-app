@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
-  "name": "my-app",
+  "name": "my-app-test",
   "compatibility_date": "2025-08-15",
   "compatibility_flags": [
     // Enable Node.js API
@@ -15,13 +15,11 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
-  "d1_databases": [
+  "hyperdrive": [
     {
-      "binding": "D1",
-      "database_id": "a76538a6-4af1-4de1-8023-b668c87cc1ef",
-      "database_name": "my-app",
-      "remote": true,
-    },
+      "binding": "HYPERDRIVE",
+      "id": "3dedca04b2494841a41cdee8515e86bc"
+    }
   ],
   "services": [
     // The service should match the "name" of your worker
@@ -41,6 +39,18 @@
     //   "bucket_name": "<BUCKET_NAME>",
     // },
   ],
+
+  // Environment variables
+  // NOTE: For sensitive values, use: wrangler secret put <KEY>
+  // or set them in Cloudflare Dashboard: Workers > your-worker > Settings > Variables
+  "vars": {
+    // IMPORTANT: Replace these placeholder values with your actual values
+    "MEDUSA_BACKEND_URL": "https://api.shopengenie.com",
+    "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY": "pk_8cf8076441d2cbcf7285bf761344c2f64263eeb69b8db307784f1f6131b6a6d4",
+    "NEXT_PUBLIC_DEFAULT_REGION": "in",
+    "NEXT_PUBLIC_SERVER_URL": "https://kasvi.shopengenie.com",
+    "NEXT_PUBLIC_BASE_URL": "https://kasvi.shopengenie.com"
+  },
 
   // Here's how to configure an additional environment
   // It can be deployed with `CLOUDFLARE_ENV=staging pnpm run deploy`

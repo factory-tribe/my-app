@@ -1,0 +1,20 @@
+.slug-field-component {
+  .label-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+
+    .lock-button {
+      padding: 0;
+      margin-left: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--theme-elevation-600);
+      
+      &:hover {
+        color: var(--theme-elevation-800);
+      }
+    }
+  }
+}
+

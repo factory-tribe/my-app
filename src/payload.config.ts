@@ -1,57 +1,70 @@
-// storage-adapter-import-placeholder
-import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite' // database-adapter-import
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import path from 'path'
-import { buildConfig } from 'payload'
-import { fileURLToPath } from 'url'
-import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
-import { GetPlatformProxyOptions } from 'wrangler'
-import { r2Storage } from '@payloadcms/storage-r2'
+// Import polyfills first to ensure they're loaded before any other code
+import "./polyfills"
 
-import { Users } from './collections/Users'
-import { Media } from './collections/Media'
+import { lexicalEditor } from "@payloadcms/richtext-lexical"
+import { postgresAdapter } from "@payloadcms/db-postgres"
+import { buildConfig } from "payload"
+import { DefaultLogger, ConsoleLogWriter } from "drizzle-orm"
+import { Users } from "./collections/Users"
+import { Products } from "./collections/Products"
+import { Media } from "./collections/Media"
+import { Tenants } from "./collections/Tenants"
+import { Header } from "./collections/Header/config"
+import { Footer } from "./collections/Footer/config"
+import { Pages } from "./collections/Pages/index"
+import { plugins } from "./plugins"
 
-const filename = fileURLToPath(import.meta.url)
-const dirname = path.dirname(filename)
+// Import sharp conditionally
+// In Cloudflare Workers, sharp is not needed at runtime (only during build)
+let sharp: any = undefined
+try {
+  // Only import sharp if we're not in a Workers environment
+  if (typeof process !== 'undefined' && !globalThis.navigator?.userAgent?.includes('Cloudflare-Workers')) {
+    sharp = require('sharp')
+  }
+} catch (e) {
+  // Sharp not available or failed to load - this is OK for Workers runtime
+}
 
-const cloudflareRemoteBindings = process.env.NODE_ENV === 'production'
-const cloudflare =
-  process.argv.find((value) => value.match(/^(generate|migrate):?/)) || !cloudflareRemoteBindings
-    ? await getCloudflareContextFromWrangler()
-    : await getCloudflareContext({ async: true })
+// Function to get database connection string from Hyperdrive or fallback to env var
+function getDatabaseConnectionString(): string {
+  // Try to access Cloudflare context for Hyperdrive
+  try {
+    const cloudflareContext = (globalThis as any)[Symbol.for('__cloudflare-context__')]
+    if (cloudflareContext?.env?.HYPERDRIVE?.connectionString) {
+      return cloudflareContext.env.HYPERDRIVE.connectionString
+    }
+  } catch (e) {
+    // Cloudflare context not available (probably during build or local dev)
+  }
+  
+  // Fallback to environment variable
+  return process.env.PAYLOAD_DATABASE_URL || ""
+}
 
 export default buildConfig({
-  admin: {
-    user: Users.slug,
-    importMap: {
-      baseDir: path.resolve(dirname),
-    },
-  },
-  collections: [Users, Media],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || '',
-  typescript: {
-    outputFile: path.resolve(dirname, 'payload-types.ts'),
-  },
-  // database-adapter-config-start
-  db: sqliteD1Adapter({ binding: cloudflare.env.D1 }),
-  // database-adapter-config-end
-  plugins: [
-    // storage-adapter-placeholder
-    r2Storage({
-      bucket: cloudflare.env.R2,
-      collections: { media: true },
-    }),
+  collections: [
+    Users,
+    Products,
+    Media,
+    Tenants,
+    Header,
+    Footer,
+    Pages,
   ],
+
+  secret: process.env.PAYLOAD_SECRET || "",
+  db: postgresAdapter({
+    logger: new DefaultLogger({ writer: new ConsoleLogWriter() }),
+    pool: {
+      connectionString: getDatabaseConnectionString(),
+      maxUses: 1,
+    },
+  }),
+  sharp,
+  
+  plugins,
 })
 
-// Adapted from https://github.com/opennextjs/opennextjs-cloudflare/blob/d00b3a13e42e65aad76fba41774815726422cc39/packages/cloudflare/src/api/cloudflare-context.ts#L328C36-L328C46
-function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
-  return import(/* webpackIgnore: true */ `${'__wrangler'.replaceAll('_', '')}`).then(
-    ({ getPlatformProxy }) =>
-      getPlatformProxy({
-        environment: process.env.CLOUDFLARE_ENV,
-        experimental: { remoteBindings: cloudflareRemoteBindings },
-      } satisfies GetPlatformProxyOptions),
-  )
-}
+//TODO
