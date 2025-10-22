@@ -46,10 +46,10 @@
   "vars": {
     // IMPORTANT: Replace these placeholder values with your actual values
     "MEDUSA_BACKEND_URL": "https://api.shopengenie.com",
-    "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY": "pk_8cf8076441d2cbcf7285bf761344c2f64263eeb69b8db307784f1f6131b6a6d4",
+    "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY": "pk_79a03537a0512c5dd2498b5a618954eebb57c0ea2d4783fde17e07eee3a13376",
     "NEXT_PUBLIC_DEFAULT_REGION": "in",
-    "NEXT_PUBLIC_SERVER_URL": "https://kasvi.shopengenie.com",
-    "NEXT_PUBLIC_BASE_URL": "https://kasvi.shopengenie.com"
+    "NEXT_PUBLIC_SERVER_URL": "https://theme.shopengenie.com",
+    "NEXT_PUBLIC_BASE_URL": "https://theme.shopengenie.com"
   },
 
   // Here's how to configure an additional environment
