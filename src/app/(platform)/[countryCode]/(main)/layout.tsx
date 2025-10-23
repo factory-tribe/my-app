@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import { headers } from "next/headers"
+import { Suspense } from "react"
 
 import { listCartOptions, retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
@@ -12,6 +13,7 @@ import FreeShippingPriceNudge from "@modules/shipping/components/free-shipping-p
 import { TenantHeader } from "@modules/layout/components/tenant-header"
 import { TenantFooter } from "@modules/layout/components/tenant-footer"
 import { fetchTenantByDomain } from "@/utilities/fetchTenantByDomain"
+import { EmbeddedWrapper } from "./embedded-wrapper"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
@@ -35,22 +37,30 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
 
   return (
     <>
-      {tenant && <TenantHeader tenant={tenant} />}
-      <Nav />
-      {customer && cart && (
-        <CartMismatchBanner customer={customer} cart={cart} />
-      )}
+      <Suspense fallback={null}>
+        <EmbeddedWrapper>
+          {tenant && <TenantHeader tenant={tenant} />}
+          <Nav />
+          {customer && cart && (
+            <CartMismatchBanner customer={customer} cart={cart} />
+          )}
 
-      {cart && (
-        <FreeShippingPriceNudge
-          variant="popup"
-          cart={cart}
-          shippingOptions={shippingOptions}
-        />
-      )}
+          {cart && (
+            <FreeShippingPriceNudge
+              variant="popup"
+              cart={cart}
+              shippingOptions={shippingOptions}
+            />
+          )}
+        </EmbeddedWrapper>
+      </Suspense>
       {props.children}
-      <Footer />
-      {tenant && <TenantFooter tenant={tenant} />}
+      <Suspense fallback={null}>
+        <EmbeddedWrapper>
+          <Footer />
+          {tenant && <TenantFooter tenant={tenant} />}
+        </EmbeddedWrapper>
+      </Suspense>
     </>
   )
 }
